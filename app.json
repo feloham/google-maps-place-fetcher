@@ -1,7 +1,7 @@
 {
-  "name": "Ionic Starter",
-  "description": "A simple Ionic app for Heroku",
-  "repository": "https://github.com/GeceGorusu/gg-users-map",
-  "logo": "http://ionicframework.com/img/ionic-logo-blog.png",
-  "keywords": ["ionic", "static"]
+  "name": "Google Maps Place Fetcher",
+  "description": "Google Maps Place Fetcher",
+  "repository": "https://github.com/onuryilmaz/google-maps-place-fetcher",
+  "logo": "",
+  "keywords": ["maps", "place"]
 }

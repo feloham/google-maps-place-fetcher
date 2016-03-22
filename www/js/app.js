@@ -1,20 +1,18 @@
 angular.module('starter', ['ionic'])
 
+    // Start application
     .run(function ($ionicPlatform) {
         $ionicPlatform.ready(function () {
-            // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
-            // for form inputs)
             if (window.cordova && window.cordova.plugins.Keyboard) {
                 cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
             }
             if (window.StatusBar) {
                 StatusBar.styleDefault();
             }
-
-
         })
     })
 
+    // Configuration for app
     .config(function ($stateProvider, $urlRouterProvider) {
 
         $stateProvider
@@ -28,14 +26,18 @@ angular.module('starter', ['ionic'])
 
     })
 
+    // Place manager factory
     .factory('PlaceManager', function () {
 
+        // All places
         var places = [];
 
+        // Insert into place
         function insertPlace(item) {
             places.push(item);
         }
 
+        // Get places
         function get() {
             return places;
         }
@@ -53,16 +55,25 @@ angular.module('starter', ['ionic'])
         }
     })
 
-    .factory('GoogleMaps', function (PlaceManager) {
+    // Google Maps factory
+    .factory('GoogleMaps', function (PlaceManager, $ionicLoading) {
 
-        var apiKey = false;
         var map = null;
 
+        // Initialize map
         function initMap() {
 
+            $ionicLoading.show();
             var options = {timeout: 10000, enableHighAccuracy: true};
 
-            var latLng = new google.maps.LatLng(41, 29);
+            var latLng = new google.maps.LatLng(41, 29); // Istanbul
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                var latLng = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+                $ionicLoading.hide();
+            }, function (error) {
+                console.log("Couldn't get your current location!")
+                $ionicLoading.hide();
+            });
 
             var mapOptions = {
                 center: latLng,
@@ -88,6 +99,7 @@ angular.module('starter', ['ionic'])
             });
             drawingManager.setMap(map);
 
+            // Start when rectangle is drawn
             google.maps.event.addListener(drawingManager, 'rectanglecomplete', function (rectangle) {
                 drawingManager.setOptions({drawingControl: false})
                 drawingManager.setDrawingMode(null);
@@ -97,7 +109,6 @@ angular.module('starter', ['ionic'])
                 bounds = rectangle.getBounds();
                 southWest = bounds.getSouthWest();
                 northEast = bounds.getNorthEast();
-
                 tileWidth = (northEast.lng() - southWest.lng()) / 2;
                 tileHeight = (northEast.lat() - southWest.lat()) / 2;
 
@@ -110,15 +121,9 @@ angular.module('starter', ['ionic'])
 
                         var tempCell = new google.maps.LatLngBounds(new google.maps.LatLng(x1, y1), new google.maps.LatLng(x2, y2));
 
-                        setTimeout(function () {
-
-                        }, 100);
                         places.radarSearch({
                             bounds: tempCell,
-                            // https://developers.google.com/places/documentation/supported_types
                             types: [
-                                // Until there's enough meta data for Google,
-                                // they label everything as an 'establishment'.
                                 'establishment'
                             ]
                         }, function (results, status) {
@@ -126,20 +131,19 @@ angular.module('starter', ['ionic'])
 
                                 for (var i = 0; i < results.length; i++) {
                                     var placeLoc = results[i].geometry.location;
-                                    var place = results[i]
+                                    var place = results[i];
                                     var marker = new google.maps.Marker({
                                         map: map,
                                         position: placeLoc
                                     });
 
                                     PlaceManager.insert(place);
-                                    service = new google.maps.places.PlacesService(map);
 
+                                    service = new google.maps.places.PlacesService(map);
 
                                     google.maps.event.addListener(marker, 'click', function () {
                                         var infoWindow = new google.maps.InfoWindow();
-                                        // infoWindow.setContent(name);
-                                        //infoWindow.open(map, this);
+
                                         service.getDetails(place, function (result, status) {
                                             if (status !== google.maps.places.PlacesServiceStatus.OK) {
                                                 console.error(status);
@@ -176,21 +180,27 @@ angular.module('starter', ['ionic'])
 
     })
 
-    .controller('MapCtrl', function ($scope, $state, $window, $ionicPopup, $interval, GoogleMaps, PlaceManager) {
+    // Map controller
+    .controller('MapCtrl', function ($scope, $window, $ionicPopup, $ionicLoading, $interval, GoogleMaps, PlaceManager) {
+
         GoogleMaps.init();
 
+        // Download places as JSON
         $scope.download = function () {
             PlaceManager.getPlaces();
         }
 
-        $scope.reloadRoute = function () {
+        // Reload the page
+        $scope.reloadPage = function () {
             $window.location.reload();
         }
 
+        // Check four counts with interval
         $interval(function () {
             $scope.placeCount = PlaceManager.getCount();
         }, 100);
 
+        // Alert at startup
         $ionicPopup.alert({
             title: 'User Guide',
             template: 'Draw a rectangle and wait until all places are gathered. <br> You can download places as JSON or check on the map.'

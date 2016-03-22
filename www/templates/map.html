@@ -6,11 +6,13 @@
 
     <ion-header-bar align-title="left" class="bar-positive">
 
-        <h1 class="title">Get All Locations</h1>
-             <div class="buttons">
-                <button class="button" ng-click="download()">Download {{placeCount}} Place</button>
-                 <button class="button" ng-click="reloadRoute()">Start Over</button>
+        <h1 class="title">Google Maps Place Fetcher</h1>
+        <div class="buttons">
+            <div ng-if="placeCount > 0">
+                <button class="button button-assertive" ng-click="download()">Download {{placeCount}} Place</button>
             </div>
+            <button class="button" ng-click="reloadPage()">Start Over</button>
+        </div>
 
 
     </ion-header-bar>
