@@ -109,11 +109,11 @@ angular.module('starter', ['ionic'])
                 bounds = rectangle.getBounds();
                 southWest = bounds.getSouthWest();
                 northEast = bounds.getNorthEast();
-                tileWidth = (northEast.lng() - southWest.lng()) / 2;
-                tileHeight = (northEast.lat() - southWest.lat()) / 2;
+                tileWidth = (northEast.lng() - southWest.lng()) / 3;
+                tileHeight = (northEast.lat() - southWest.lat()) / 3;
 
-                for (x = 0; x < 2; x++) {
-                    for (y = 0; y < 2; y++) {
+                for (x = 0; x < 3; x++) {
+                    for (y = 0; y < 3; y++) {
                         var x1 = southWest.lat() + (tileHeight * x);
                         var y1 = southWest.lng() + (tileWidth * y);
                         var x2 = x1 + tileHeight;
@@ -121,12 +121,12 @@ angular.module('starter', ['ionic'])
 
                         var tempCell = new google.maps.LatLngBounds(new google.maps.LatLng(x1, y1), new google.maps.LatLng(x2, y2));
 
-                        places.radarSearch({
+                        places.search({
                             bounds: tempCell,
                             types: [
                                 'establishment'
                             ]
-                        }, function (results, status) {
+                        }, function (results, status, pagination) {
                             if (status == google.maps.places.PlacesServiceStatus.OK) {
 
                                 for (var i = 0; i < results.length; i++) {
@@ -139,22 +139,16 @@ angular.module('starter', ['ionic'])
 
                                     PlaceManager.insert(place);
 
-                                    service = new google.maps.places.PlacesService(map);
-
                                     google.maps.event.addListener(marker, 'click', function () {
                                         var infoWindow = new google.maps.InfoWindow();
-
-                                        service.getDetails(place, function (result, status) {
-                                            if (status !== google.maps.places.PlacesServiceStatus.OK) {
-                                                console.error(status);
-                                                return;
-                                            }
-                                            infoWindow.setContent(result.name);
+                                            infoWindow.setContent(place.name);
                                             infoWindow.open(map, marker);
 
-                                        });
-
                                     });
+                                }
+
+                                if(pagination.hasNextPage){
+                                    pagination.nextPage();
                                 }
                             }
                             else {
